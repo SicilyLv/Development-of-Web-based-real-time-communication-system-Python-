@@ -1,0 +1,44 @@
+<html>
+<head>
+    <title>Universe</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="static\login.css" type="text/css" rel="stylesheet">
+</head>
+
+<script>
+        function setCookie(){
+                document.cookie="userID="+userID.value;
+
+                var x=document.getElementById('formAction');
+                x.submit();
+        }
+</script>
+
+<body>
+<form id="formAction" width="202" border="0" onsubmit="return true" align="center" cellpadding="05" cellspacing="0"
+      action='/login' method="POST"><!--'get' will show the detail of input-->
+        <tr>
+                <td width="192"><div class="message">Welcome to Universe Login Page!</div></td>
+        </tr>
+        <tr>
+                <td>userID:<input name="userID" type="text" id="userID" value="" placeholder=""></td>
+        </tr>
+        <tr>
+                <td>password:<input name="password" type="password" id="password" value="" placeholder=""></td>
+        </tr>
+        <tr>
+                <style type="value/css">
+                        input.text{text-align:center;padding:10px 20px;width:300px;}
+                </style>
+
+                <td> <input id='login1' value='login' onclick="setCookie()"> </input></td>
+                <!--'once click <button>, must submit at once. So use <input>-->
+
+                <!--if click'register', skip to register page. display 'register' button on login.html-->
+                <input type="button" name="register" value ="register"
+                       onclick="window.location.href='/registerRaw'"/><!--'url! not htmlPage-->
+        </tr>
+</form>
+</body>
+
+</html>

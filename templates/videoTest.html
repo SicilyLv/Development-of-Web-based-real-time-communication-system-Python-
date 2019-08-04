@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta http-equiv="X-UA-Compatible" content="ie=edge">
+ <title>Document</title>
+</head>
+<body>
+ <video id="video" width="500" height="500" autoplay></video>
+     <div>
+        <button id="start" value="start">start</button>
+     </div>
+
+     <div>
+        <button id="stop" value="stop">stop</button>
+     </div>
+</body>
+
+<!--这里是打开摄像头和麦克设备（会返回一个Promise对象）-->
+<script>
+    // 这里是打开摄像头和麦克设备（会返回一个Promise对象）
+    navigator.mediaDevices.getUserMedia({
+         audio: true,
+         video: true
+        }).then(stream => {
+         console.log(stream) // 放回音视频流
+        }).catch(err => {
+         console.log(err) // 错误回调
+        })
+</script>
+
+<!--把流呈现到交互界面中.成功的将我们的摄像头在页面展示了-->
+<script>
+ var video = document.getElementById('video')
+ navigator.mediaDevices.getUserMedia({
+ audio: true,
+ video: true
+ }).then(stream => {
+ // 这里就要用到srcObject属性了，可以直接播放流资源
+ video.srcObject = stream
+ }).catch(err => {
+ console.log(err) // 错误回调
+ })
+</script>
+
+<!--从摄像头采集视频-->
+<script>
+    // 创建MediaRecorder的实例mediaRecorder
+    var video = document.getElementById('video')
+    navigator.mediaDevices.getUserMedia({
+     audio: true,
+     video: true
+    }).then(stream => {
+     // 这里就要用到srcObject属性了，可以直接播放流资源
+     video.srcObject = stream
+     var mediaRecorder = new MediaRecorder(stream, {
+     audioBitsPerSecond : 128000, // 音频码率
+     videoBitsPerSecond : 100000, // 视频码率
+     mimeType : 'video/webm;codecs=h264' // 编码格式
+     })
+    }).catch(err => {
+     console.log(err) // 错误回调
+    })
+</script>
+<!--控制mediaRecorder的开始采集和停止采集的方法-->
+<script>
+    // 这里我们增加两个按钮控制采集的开始和结束
+    var start = document.getElementById('start')
+    var stop = document.getElementById('stop')
+    var video = document.getElementById('video')
+    navigator.mediaDevices.getUserMedia({
+         audio: true,
+         video: true
+    }).then(stream => {
+         // 这里就要用到srcObject属性了，可以直接播放流资源
+         video.srcObject = stream
+         var mediaRecorder = new MediaRecorder(stream, {
+             audioBitsPerSecond : 128000, // 音频码率
+             videoBitsPerSecond : 100000, // 视频码率
+             mimeType : 'video/webm;codecs=h264' // 编码格式
+         });
+         // 开始采集
+         start.onclick = function () {
+         mediaRecorder.start();
+         console.log('开始采集')
+     }
+     // 停止采集
+     stop.onclick = function () {
+         mediaRecorder.stop()
+         console.log('停止采集')
+     }
+     // 事件
+     mediaRecorder.ondataavailable = function (e) {
+         console.log(e);
+         // 下载视频
+         var blob = new Blob([e.data], { 'type' : 'video/mp4' })
+         let a = document.createElement('a')
+         a.href = URL.createObjectURL(blob);//通过URL.createObjectURL()方法将Blob为url下载到本地
+         a.download = `test.mp4`;//该属性是HTML5新增的属性，此属性是让我们的浏览器下载URL而不是跳转到URL所指向的内容，所以若我们需要下载文件到本地，需要设置这个属性值。
+         a.click()
+     }
+     }).catch(err => {
+         console.log(err) // 错误回调
+     })
+</script>
+

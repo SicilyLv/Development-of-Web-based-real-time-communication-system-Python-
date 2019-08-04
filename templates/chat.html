@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8"></meta>>
+<title>Space chat</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" href="static/amazeui.min.css" />
+<link rel="stylesheet" href="static/main.css" />
+	<link href="static/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css">
+</head>
+
+<!--script define behavior-->
+<script type="text/javascript" src="static/jquery.min.js"></script>
+<script type="text/javascript" src="static/amazeui.min.js"></script>
+<script type="text/javascript" src="static/zUI.js"></script>
+<script src="{{url_for('static',filename='jquery-1.8.3.min.js')}}"></script><!--for using '$'-->
+<script type="text/javascript"></script>
+<!--<script type="text/javascript" src="static/wechat.js"></script>-->
+<body onunload="onunloadEvent()">
+
+<!--receive message automatically always-->
+<script>
+    //window.location.reload(chat.html);
+
+	function receiveMessage() {
+		console.log("receiveMessage1")
+		var x = document.getElementById("currentChattingUser").innerText;//innerText, innerHTML is with format
+
+		if (x != "blank" && x!="") {//before click friend shows
+			var jsonRaw = {
+				'senderID': document.getElementById("currentChattingUser").innerHTML,
+			};
+			var jsonSendMessage = JSON.stringify(jsonRaw);
+			//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+            //judge online or not
+			$.ajax({
+                url: "http://192.168.43.195:5000/judgeFriendOnlineOrNot",
+                type: 'post',
+                contentType: "application/json",
+                dataType: "json",//necessary
+                data: jsonSendMessage,
+                success: function (data) {
+                    var json = eval(data)
+                    if(json['onlineOrNot']=='1'){
+                        document.getElementById('onlineOrNot').innerHTML='Online';
+                    }
+		            else{
+		                document.getElementById('onlineOrNot').innerHTML='absent';
+                    }
+                }
+            })
+
+            //receive message
+			$.ajax({
+				url: "http://192.168.43.195:5000/receiveMessage",
+				type: 'post',
+				contentType: "application/json",
+				dataType: "json",//necessary
+				data: jsonSendMessage,
+				success: function (data) {
+					var json = eval(data)
+					console.log(json)
+
+					if (!json.hasOwnProperty('blank')) {
+
+						var chat = document.getElementById('chatbox');//display message   middle right
+						$.each(json, function (index, item) {//pointer: index:key  item:value//循环获取数据
+							if (index=='0'||index=='1') {//is text
+								(document.getElementById('chatbox')).innerHTML += '<li class="other">' + '<span>' + item + '</span></li>';//+'<img src=\"../static/images/own_head.jpg\"/>'
+							}
+
+							else if (index.indexOf("1111111")!=-1) {//is file
+								filename = item;
+								//console.log(filename);
+
+								chat.innerHTML += '<li class="other">' +
+										'<a target="_blank" href="http://192.168.43.195:5000/static/fileMessage/' +
+										filename +
+										'">' +
+										'<span>' +
+										'<img src="http://192.168.43.195:5000/static/images/File.png"/>' +
+										'</span></a></li>';
+							}
+
+							else if(index.indexOf("2222222")!=-1) {//video call request
+								var r = confirm("Do you want to have a video call with " + item+"?");
+								console.log('r='+r);
+
+								var time = new Date();
+								var jsonRaw = {
+									'friendId': item,
+									'content': 'agree',
+									'time': time.toLocaleString()//获取日期与时间
+								};
+
+								if (r == true) {//agree video request
+									window.open("http://192.168.43.195:5000/audioRaw","_blank");
+								}
+								else {//deny video request
+									jsonRaw['content']='disagree';
+								}
+
+								var jsonSendMessage = JSON.stringify(jsonRaw);
+								console.log('c2 reply message:',jsonSendMessage);
+
+								$.ajax({
+									url: "http://192.168.43.195:5000/videoCallReply",
+									type: 'POST',
+									contentType: "application/json",
+									dataType: 'json',
+									data: jsonSendMessage,
+									header: {
+										'Content-Type': 'application/x-www-form-urlencoded;'
+									},
+									dataType: "json",//necessary
+									success: function (data) {
+									}
+								});
+
+								 window.open("http://192.168.43.195:5000/audioRaw","_blank");
+							}
+
+							else if(index.indexOf("3333333")!=-1) {//get video reply
+								if(item=='agree'){
+									window.open("http://192.168.43.195:5000/audioRaw","_blank");
+								}
+								else{
+									alert('Your friend is busy now.');
+								}
+							}
+							else if(index.indexOf("4444444")!=-1) {//audio call request
+								var r = confirm("Do you want to have a audio call with " + item+"?");
+								//console.log('r='+r);
+
+								var time = new Date();
+								var jsonRaw = {
+									'friendId': item,
+									'content': 'agree',
+									'time': time.toLocaleString()//获取日期与时间
+								};
+
+								if (r == true) {//agree video request
+									window.open("http://192.168.43.195:5000/audioRaw","_blank");
+								}
+								else {//deny video request
+									jsonRaw['content']='disagree';
+								}
+
+								var jsonSendMessage = JSON.stringify(jsonRaw);
+								console.log('c2 reply message:',jsonSendMessage);
+
+								$.ajax({
+									url: "http://192.168.43.195:5000/audioCallReply",
+									type: 'POST',
+									contentType: "application/json",
+									dataType: 'json',
+									data: jsonSendMessage,
+									header: {
+										'Content-Type': 'application/x-www-form-urlencoded;'
+									},
+									dataType: "json",//necessary
+									success: function (data) {
+									}
+								});
+							}
+							else if(index.indexOf("5555555")!=-1){//friend accept/deny audio request
+								if(item=='agree'){
+									window.open("http://192.168.43.195:5000/audioRaw","_blank");
+								}
+								else{
+									alert('Your friend is busy now.');
+								}
+							}
+						})
+					}
+				}
+			})
+		}
+	}
+
+	setInterval(receiveMessage,4000);
+</script>
+
+<!--upper left三图标: green chat, address book, add new friend-->
+<!--all page-->
+<div class="box">
+	<!--all page - background-->
+	<div class="wechat">
+		<!--left: bar: 3 icons-->
+		<div class="sidestrip">
+			<div class="am-dropdown" data-am-dropdown>
+				<!--头像插件-->
+			</div>
+
+			< green chat, address book-->
+			<div class="sidestrip_icon">
+				<a id="si_1" style="background: url(../static/images/icon/head_2_1.png) no-repeat;" onclick="displayOnlineFriends()"></a>
+				<a id="si_2" style="background: url(../static/images/icon/head_3_1.png)" onclick="displayAllFriends()"></a>
+				<a id="si_3" style="background: url(../static/images/icon/head_4_1.png)" onclick="skipToAddPage()"></a>
+			</div>
+
+			lower left底部扩展键:feedback, headline, backup and recovery
+			<div id="doc-dropdown-justify-js">
+				<div class="am-dropdown" id="doc-dropdown-js" style="position: initial;">
+					<div class="sidestrip_bc am-dropdown-toggle"></div>
+					<ul class="am-dropdown-content" style="">
+						<li>
+							<a href="#" data-am-modal="{target: '#doc-modal-1', closeViaDimmer: 0, width: 400, height: 225}">意见反馈</a>
+							<div class="am-modal am-modal-no-btn" tabindex="-1" id="doc-modal-1">
+							  <div class="am-modal-dialog">
+								<div class="am-modal-hd">Modal 标题
+								  <a href="javascript: void(0)" class="am-close am-close-spin" data-am-modal-close>&times;</a>
+								</div>
+								<div class="am-modal-bd">
+								  Modal 内容。本 Modal 无法通过遮罩层关闭。
+								</div>
+							  </div>
+							</div>
+						</li>
+
+						<li><a href="#">备份与恢复</a></li>
+						<li><a href="#">设置</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!--middle: search frame + online friends list + all friend list-->
+		<div class="middle on">
+			<!--search-->
+			<div class="wx_search">
+				<input id="searchContent" type="text" placeholder="search"/>
+				<button id="search" onclick="searchFriend()">Go</button>
+			</div>
+
+			<!--upper left 3 icons-1: show online friends-->
+			<div class="office_text">
+				<!--display online friend(s) / all friends-->
+				<ul id="list" >
+				</ul>
+			</div>
+		</div>
+
+		<!--right all-->
+		<div class="talk_window">
+			<!--top-upper right:currentChattingUser-->
+			<div class="windows_top">
+				<div class="windows_top_box">
+					<span id="currentChattingUser">blank</span>
+                    <span id="onlineOrNot"></span>
+				</div>
+			</div>
+			<!--middle right聊天内容-->
+			<div class="windows_body">
+				<div class="office_text" style="height: 100%;">
+					<ul class="content" id="chatbox">
+					</ul>
+				</div>
+			</div>
+			<!--lower right: input message(file,image,text) and send-->
+			<div class="windows_input" id="talkbox">
+				<!--.input_icon a:nth-child(1-6)-->
+				<div class="input_icon">
+					<!--执行一段空白的javascript语句，返回空或者false值，从而防止链接跳转。跟当前a标签无关，这段代码始终都会执行。-->
+					<!--a:nth-child(1) file icon: css defines <a> behavior-->
+                    <!--<a>: select inputed file -->
+					<a onclick="selectFile()"></a>
+					<input type="file" id="uploadFile" name="uploadFile" style="display:none;" onChange="uploadFileToBack()"/>
+
+					<a href="javascript:;"></a>
+					<a href="javascript:;"></a>
+
+					<!--call icon-->
+					<a target="_blank" onclick='applyAudioCall()'></a>
+					<!--video icon-->
+					<a target="_blank" onclick='applyVideoCall()'></a>
+					<!--audio call-->
+					<script>
+						function applyAudioCall() {
+							var time = new Date();
+							var jsonRaw = {
+								'friendId': document.getElementById("currentChattingUser").innerHTML,
+								'content': 'audio request',
+								'time':"2019-05-27 15:02:16"//获取日期与时间
+							};
+							var jsonSendMessage = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+							$.ajax({
+								url: "http://192.168.43.195:5000/audioCallRequest",
+								type: 'POST',
+								contentType: "application/json",
+								dataType: 'json',
+								data: jsonSendMessage,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded;'
+								},
+								dataType: "json",//necessary
+								success: function (data) {
+									//console.log(data)
+									var json = eval(data)
+
+									if(json.hasOwnProperty('friendDeny')){//not online
+										alert(json['friendDeny']);
+									}
+									else{//online, wait for request
+										alert(json['waitForFriendAnswer']);
+									}
+								}
+							})
+						}
+					</script>
+					<!--video call-->
+					<script>
+						function applyVideoCall() {
+							var time = new Date();
+							var jsonRaw = {
+								'friendId': document.getElementById("currentChattingUser").innerHTML,
+								'content': 'video request',
+								'time':"2019-05-27 15:02:16"//获取日期与时间
+							};
+							var jsonSendMessage = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+							$.ajax({
+								url: "http://192.168.43.195:5000/videoCallRequest",
+								type: 'POST',
+								contentType: "application/json",
+								dataType: 'json',
+								data: jsonSendMessage,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded;'
+								},
+								dataType: "json",//necessary
+								success: function (data) {
+									//console.log(data)
+									var json = eval(data)
+
+									if(json.hasOwnProperty('friendDenyNotOnline')){
+										alert(json['friendDenyNotOnline']);
+									}
+								}
+							})
+						}
+					</script>
+
+					<a href="javascript:;"></a>
+
+
+				</div>
+				<div class="input_box">
+					<textarea name="" rows="" cols="" id="input_box"></textarea>
+					<button id="send" onclick="sendTextMessageToBack()">send</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--window.onload show online friends-->
+<script>
+	var si1 = document.getElementById('si_1');
+	var si2 = document.getElementById('si_2');
+	var si3 = document.getElementById('si_3');
+
+	si1.style.background = "url(static/images/icon/head_2_1.png) no-repeat";
+	si2.style.background = "url(static/images/icon/head_3_1.png) no-repeat";
+	si3.style.background = "url(static/images/icon/head_4_1.png) no-repeat";
+
+	var endAddOnlineFriends1 = 0; //the argument that Pass to 'clearInterval'
+	var endAddOnlineFriends2 = 0; //the argument that Pass to 'clearInterval'
+
+	window.onload=function() {
+
+		endAddOnlineFriends1 =setInterval(displayOnlineFriends,5000);
+		//when loading all elements of page, display online friends first
+		// document.oncontextmenu = function(){
+		// 　　return false;
+		// }
+	}
+</script>
+
+<!--select File-->
+<script>
+	function selectFile() {
+		// select File
+		document.getElementById("uploadFile").click();
+	}
+	//var fileM=new Object();
+</script>
+<!--upload File to back + display on HTML page -->
+<script>
+	function uploadFileToBack(){
+		//get file inputed_+ show on chatbox
+		var fileM=document.querySelector("#uploadFile");
+		// console.log(typeof(fileM));
+		// console.log(fileM);
+		//获取文件对象，files是文件选取控件的属性，存储的是文件选取控件选取的文件对象，类型是一个数组
+		var fileObj = fileM.files[0];// 获取文件对象
+		// console.log(typeof(fileObj));
+		// console.log(fileObj);
+
+		//创建formdata对象，formData用来存储表单的数据，表单数据时以键值对形式存储的。
+		var formDataRaw = new FormData();
+		// console.log(typeof(formDataRaw));
+		formDataRaw.append('friendId', document.getElementById("currentChattingUser").innerText);
+		formDataRaw.append('file', fileObj);
+
+		var FileController = "http://192.168.43.195:5000/uploadFile";// 接收上传文件的后台地址
+		var xhr = new XMLHttpRequest();
+		xhr.open("post", FileController, true);
+		xhr.send(formDataRaw);
+
+
+		// <!--Display file on page-->
+		//获取id为uploadFile的input file的值
+		var fileName = document.getElementById("uploadFile").value;
+		//console.log(fileName)
+		//截取文件后缀名
+		var file_suffix1 = fileName.substr(fileName.length-3);
+		var file_suffix2 = fileName.substr(fileName.length-4);
+		//console.log(file_suffix2)
+
+		var reader  = new FileReader();
+		var array=['txt','png','jpg','xls','JPG','PNG','xlsx','gif','GIF'];
+		if(array.indexOf(file_suffix1)!=-1||array.indexOf(file_suffix2)!=-1){
+					var f = document.getElementById("uploadFile").files;
+					filename=f[0].name;
+					//console.log(filename);
+
+					var myDate = new Date();
+					var currentTime=myDate.getTime();
+					var chat = document.getElementById('chatbox');//display message   middle right
+					chat.innerHTML += '<li class="me">' +
+										'<a target="_blank" href="http://192.168.43.195:5000/static/fileMessage/'+
+										filename+
+										'">'+
+										'<span>' +
+										'<img src="http://192.168.43.195:5000/static/images/File.png"/>'+
+										'</span></a></li>';
+		}
+		else{
+			alert('Do not support the file with that suffix')
+		}
+}
+</script>
+<!--send Text ToBack-->
+<script>
+function sendTextMessageToBack() {
+	var text = document.getElementById('input_box');//send message area   lower right
+	var chat = document.getElementById('chatbox');//display message   middle right
+	var btn = document.getElementById('send');//send button id
+	var talk = document.getElementById('talkbox');
+	btn.onclick = function () {<!--Click trigger event-->
+		if (text.value == '') {
+			alert('不能发送空消息');//show pop-up windows//??
+		}
+		else {
+			//diplay on page
+			chat.innerHTML += '<li class="me">'+'<span>' + text.value + '</span></li>';//+'<img src=\"../static/images/own_head.jpg\"/>'
+			content=text.value
+			text.value = '';
+
+			// chat.scrollTop = chat.scrollHeight;
+			// talk.style.background = "#fff";
+			// text.style.background
+
+			// send to back
+			var time = new Date();
+
+			if(document.getElementById("currentChattingUser").innerHTML!=''){
+				var jsonRaw = {
+					'receiverID': document.getElementById("currentChattingUser").innerHTML,
+					'content': content,
+					'time': time.toLocaleString()//获取日期与时间
+				};
+				var jsonSendMessage = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+				$.ajax({
+					url: "http://192.168.43.195:5000/sendMessage",
+					type: 'POST',
+					contentType: "application/json",
+					dataType: 'json',
+					data: jsonSendMessage,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;'
+					},
+					dataType: "json",//necessary
+					success: function (data) {
+						//console.log(data)
+					}
+				})
+			}
+			else{
+				alert('There is no such friend');
+			}
+		}
+	}
+}
+</script>
+
+<!--searchFriend()-->
+<script>
+	function searchFriend() {
+		//clearInterval(endAddOnlineFriends);//stop show online friends
+
+		var jsonRaw = {
+				'searchContent': $("#searchContent").val(),
+		};
+		//console.log($("#searchContent").val());
+
+		var searchKeyword = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+		$.ajax({
+			url: "http://192.168.43.195:5000/search",
+			type: 'post',
+			contentType: "application/json",
+			dataType: "json",//necessary
+			data: searchKeyword,
+			success: function (data) {
+				var json = eval(data)
+
+				//console.log(data)
+
+				$("#list").find("li").remove();
+				$.each(json, function (index, item) {//pointer: index:key  item:value//循环获取数据
+					var li = document.createElement('li');//<li>becomes a object
+					//li.id =  id;
+
+					//'+string+' format!!!的在html代码中需要加入某个变量
+					li.innerHTML = "<li class=\"user_active\" width:100% " +
+									"onmousedown=\" clickOnlineFriend(" +item+ " )\" "+
+									">"+
+									"<div class=\"friend_box\">" +
+										"<div class=\"friend_text\">" +
+											"<p class=\"user_name\" >" +
+											item +
+											"</p>" + "<p class=\"a5\" >" +
+											"Welcome！" +
+										"</div>" +
+									"</div>" +
+									"</li>";
+
+					var userID = item;
+					$("#list").html($("#list").html() + li.innerHTML);
+				});
+			}
+		})
+	}
+</script>
+
+<!--upper left 3 icons-1：displayOnlineFriends-->
+<script>
+	function displayOnlineFriends() {
+		//for: after click"new friends", then click online icon
+		// ul = document.querySelector("#chatbox");
+		// lis= ul.querySelectorAll("li");
+		// for (var i = 0; i < lis.length; i++) {
+		// 	lis[i].remove();
+		// }
+
+		var si1 = document.getElementById('si_1');
+		var si2 = document.getElementById('si_2');
+		var si3 = document.getElementById('si_3');
+
+		si1.style.background = "url(static/images/icon/head_2_1.png) no-repeat";
+		si2.style.background = "url(static/images/icon/head_3.png) no-repeat";
+		si3.style.background = "url(static/images/icon/head_4.png) no-repeat";
+
+				//clear orignal diaplay of right list
+				// var ul = document.querySelector("#chatbox");
+				// var lis = ul.querySelectorAll("li");
+				// for (var i = 0; i < lis.length; i++) {
+				// 	lis[i].remove();
+				//}
+
+		$.ajax({
+					url: "http://192.168.43.195:5000/friendsOnline",
+					type: 'post',
+					contentType: "application/json",
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;'
+					},
+					dataType: "json",//necessary
+					success: function (data) {
+						//console.log(data)
+
+						// //clear orignal diaplay of right list
+						// var ul = document.querySelector("#chatbox");
+						// var lis = ul.querySelectorAll("li");
+						// for (var i = 0; i < lis.length; i++) {
+						// 	lis[i].remove();
+						// }
+
+						//clear orignal diaplay of middle list
+						ul = document.querySelector("#list");
+						lis= ul.querySelectorAll("li");
+						for (var i = 0; i < lis.length; i++) {
+							lis[i].remove();
+						}
+
+						var json = eval(data)
+						//console.log(json)
+						$.each(json, function (index, item) {//pointer: index:key  item:value//循环获取数据
+							var li = document.createElement('li');//<li>becomes a object
+							//li.id =  id;
+
+							//'+string+' format!!!的在html代码中需要加入某个变量
+							li.innerHTML = "<li class=\"user_active\" width:100% " +
+									"onmousedown=\"clickOnlineFriend('" +item+ "')\""+ //''is wrong
+									">"+
+									"<div class=\"friend_box\">" +
+										"<div class=\"friend_text\">" +
+											"<p class=\"user_name\" >" +
+											item +
+											"</p>" + "<p class=\"a5\" >" +
+											"Welcome！" +
+										"</div>" +
+									"</div>" +
+									"</li>";
+
+							var userID = item;
+							$("#list").html($("#list").html() + li.innerHTML);
+						});
+					},
+					error: function (data) {}
+				});
+	}
+	endAddOnlineFriends2 =setInterval(displayOnlineFriends,5000);
+</script>
+
+<!--top-upper right:currentChattingUser-->
+<!--left+right click Online Friend: show the current friend on upper left-->
+<script>
+	function  clickOnlineFriend(id) {
+		// console.log(id)
+		// console.log(typeof(id))
+		
+		var btnNum = window.event.button;
+		if (btnNum == 2) {//right click
+			var r=confirm("Are you sure delete this friend?");
+			if (r==true)//delete
+			{
+				var jsonRaw = {
+						'deletedID': id
+				};
+				var jsonSendMessage = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+				$.ajax({
+					url: "http://192.168.43.195:5000/deleteFriend",
+					type: 'POST',
+					contentType: "application/json",
+					dataType: 'json',
+					data: jsonSendMessage,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;'
+					},
+					dataType: "json",//necessary
+					success: function (data) {
+
+					}
+				})
+			}
+		}
+		else{//leftclick
+			document.getElementById("currentChattingUser").innerHTML = id;
+
+			//clear orignal diaplay of right list
+			var ul = document.querySelector("#chatbox");
+			var lis = ul.querySelectorAll("li");
+			for (var i = 0; i < lis.length; i++) {
+				lis[i].remove();
+			}
+		}
+	}
+</script>
+
+<!--upper left 3 icons-2: all friends icons-display all friends-->
+<script>
+	//display new friends + all friends
+		function displayAllFriends(){
+			var si1 = document.getElementById('si_1');
+			var si2 = document.getElementById('si_2');
+			var si3 = document.getElementById('si_3');
+
+			si2.style.background = "url(static/images/icon/head_3_1.png) no-repeat";
+			si1.style.background = "url(static/images/icon/head_2.png) no-repeat";
+			si3.style.background = "url(static/images/icon/head_4.png) no-repeat";
+
+			clearInterval(endAddOnlineFriends1);//stop show online friends
+			//'+string+' format!!!的在html代码中需要加入某个变量
+
+			clearInterval(endAddOnlineFriends2);//stop show online friends
+
+			//clear orignal diaplay of middle list
+			var ul = document.querySelector("#list");
+			var lis= ul.querySelectorAll("li");
+			for (var i = 0; i < lis.length; i++) {
+				lis[i].remove();
+			}
+
+			var liNewFriends = document.createElement('li');
+			liNewFriends.innerHTML = "<li id='newFriends' onclick='clickNewFriends()'>" +
+					"<div class=\"friends_box\">" +
+						"<div class=\"friends_text\">" +
+							"<p class=\"user_name\" >new friends</p>" +
+						"</div>" +
+					"</div>" +
+					"<p class=\"user_name\" >All friends </p>" +
+					"</li>";
+
+			$("#list").html($("#list").html() + liNewFriends.innerHTML);
+
+
+			$.ajax({
+				url: "http://192.168.43.195:5000/displayAllFriends",
+				type: 'post',
+				contentType: "application/json",//设置你发送给服务器的格式
+				dataType: 'json',//dataType设置你收到服务器数据的格式 important!!!!!
+				success: function (data) {//all friends ID
+					var json = eval(data)
+
+					//console.log(data)
+
+					$.each(json, function (index, item) {//pointer: index:key  item:value//循环获取数据
+						var li = document.createElement('li');//<li>becomes a object
+						//li.id =  id;
+
+						//'+string+' format!!!的在html代码中需要加入某个变量
+						li.innerHTML = "<li class=\"user_active\" width:100% " +
+								"onmousedown=\"clickOnlineFriend('" +item+ "')\""+ //''is wrong
+								">"+
+								"<div class=\"friend_box\">" +
+									"<div class=\"friend_text\">" +
+										"<p class=\"user_name\" >" +
+										item +
+										"</p>" + "<p class=\"a5\" >" +
+										"Welcome！" +
+									"</div>" +
+								"</div>" +
+								"</li>";
+
+						var userID = item;
+						$("#list").html($("#list").html() + li.innerHTML);
+					})
+				}
+			})
+
+		}
+</script>
+
+<!--upper left 3 icons-3: add icon--skipToAddPage-->
+<script>
+	function skipToAddPage() {
+		//top.location="http://192.168.43.195:5000/addNewFriend.html";
+		window.location.href="http://192.168.43.195:5000/addNewFriendRaw";
+	}
+</script>
+
+<!--display all new friends-->
+<script>
+	function clickNewFriends() {
+
+		var ul = document.querySelector("#chatbox");
+		var lis = ul.querySelectorAll("li");
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].remove();
+		}
+
+		document.getElementById("currentChattingUser").innerHTML='';
+		$.ajax({
+					url: "http://192.168.43.195:5000/displayNewFriendsList",
+					type: 'post',
+					contentType: "application/json",
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;'
+					},
+					dataType: "json",//necessary
+					success: function (data) {
+						var json = eval(data)
+
+						var chat = document.getElementById('chatbox');//display message   middle right
+						$.each(json, function (index, item) {//pointer: index:key  item:value//循环获取数据
+						var li = document.createElement('li');//<li>becomes a object
+						//li.id =  id;
+
+						//'+string+' format!!!的在html代码中需要加入某个变量
+						li.innerHTML = "<li class=\"user_active\" width:100% " +
+									"onclick=\"clickApplicant('"  +item+  "')\" "+ //''在jq中写onclick方法传递的参数要加单引号
+									">"+
+									"<div class=\"friend_box\">" +
+										"<div class=\"friend_text\">" +
+											"<p class=\"user_name\" >" +
+											item +
+											"</p>" +
+										"</div>" +
+									"</div>" +
+									"</li>";
+						$("#chatbox").html($("#chatbox").html() + li.innerHTML);
+					})
+					},
+					error: function (data) {
+					}
+				});
+	}
+</script>
+<!--click new friend-->
+<script>
+	function clickApplicant(id) {
+		//console.log(id);
+		clearInterval(endAddOnlineFriends1);//stop show online friends
+		clearInterval(endAddOnlineFriends2);//stop show online friends
+
+		var r = confirm("Do you want to add this friend?");
+		var addOrNot = 1;
+		if (r == true)//add
+		{
+			addOrNot = 1
+		} else//do not add
+		{
+			addOrNot = 0
+		}
+
+		var jsonRaw = {
+			'addOrNot': addOrNot,
+			'applicantID': id
+		};
+
+		var jsonSendMessage = JSON.stringify(jsonRaw);
+		//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+		//no matter add the friend or not, flask must delete the record of Table newfriends
+		$.ajax({
+			url: "http://192.168.43.195:5000/addNewFriend",
+			type: 'post',
+			contentType: "application/json",
+			dataType: "json",//necessary
+			data: jsonSendMessage,
+			success: function (data) {
+			}
+		})
+
+		//remove a <li> from chatbox, which has been added or not
+		//clear orignal display of chatbox
+		var ul = document.querySelector("#chatbox");
+		var lis = ul.querySelectorAll("li");
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].remove();
+		}
+
+		$.ajax({
+			url: "http://192.168.43.195:5000/displayNewFriendsList",
+			type: 'post',
+			contentType: "application/json",
+			header: {
+				'Content-Type': 'application/x-www-form-urlencoded;'
+			},
+			dataType: "json",//necessary
+			success: function (data) {
+				var json = eval(data)
+
+				var chat = document.getElementById('chatbox');//display message   middle right
+				$.each(json, function (index, item) {//pointer: index:key  item:value//循环获取数据
+					var li = document.createElement('li');//<li>becomes a object
+					//li.id =  id;
+
+					//'+string+' format!!!的在html代码中需要加入某个变量
+					li.innerHTML = "<li class=\"user_active\" width:100% " +
+									"onclick=\"clickApplicant('\"+item+\"')\" "+ //!!在jq中写onclick方法传递的参数要加单引号''
+									">"+
+									"<div class=\"friend_box\">" +
+										"<div class=\"friend_text\">" +
+											"<p class=\"user_name\" >" +
+											item +
+											"</p>" +
+										"</div>" +
+									"</div>" +
+									"</li>";
+						$("#chatbox").html($("#chatbox").html() + li.innerHTML);
+				})
+			},
+			error: function (data) {
+			}
+		})
+
+		//display all friends after adding
+		//clear orignal diaplay of middle list
+		var ul = document.querySelector("#list");
+		var lis = ul.querySelectorAll("li");
+		for (var i = 0; i < lis.length; i++) {
+			lis[i].remove();
+		}
+		displayAllFriends();
+	}
+</script>
+
+<!--onunloadEvent-->
+<script>
+	// pay attention to the Reference format of system function
+	//once close page, the function works
+	window.onunloadEvent=function(){
+
+	        //chrome block pop-up
+            $.ajax({
+                url: "http://192.168.43.195:5000/exit",
+                type: 'POST',
+                contentType: "application/json",
+            })
+	}
+
+
+</script>
+
+
+</body>
+</html>

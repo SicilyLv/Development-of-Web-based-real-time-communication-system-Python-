@@ -1,0 +1,69 @@
+<html>
+<head>
+    <title>Universe</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="static\login.css" type="text/css" rel="stylesheet">
+</head>
+
+<script type="text/javascript" src="static/jquery.min.js"></script>
+<script src="{{url_for('static',filename='jquery-1.8.3.min.js')}}"></script>
+<script>
+        function searchNewFriends(){
+                var jsonRaw = {
+				'newFriend': $("#userID").val(),//get <input> value
+                };
+                var jsonFriendID = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+                console.log(jsonFriendID);
+
+                $.ajax({
+                        url: "http://192.168.43.195:5000/addingFriendExistingOrNot",
+                        type: 'post',
+                        contentType: "application/json",
+                        dataType: "json",//necessary
+                        data: jsonFriendID,
+                        success: function (data) {
+                            console.log('2222');
+                            var json = eval(data);
+
+                            if (data['isExisting']==-1){
+                                    alert('There is no such friend, please input again!')
+                                    window.location.href="http://192.168.43.195:5000/addNewFriendRaw";
+                            }
+                            else if(data['isExisting']==0){
+                                    alert('You are friends already, please add another person!')
+                                    window.location.href="http://192.168.43.195:5000/addNewFriendRaw";
+                            }
+                            else{//added, and skip to chat.html
+                                    window.location.href="http://192.168.43.195:5000/";
+                            }
+                        }
+                })
+        }
+</script>
+
+<body>
+<!--backend can get data directly-->
+<form id="formAction" width="202" border="0" onsubmit="return true"
+      align="center" cellpadding="05" cellspacing="0" id="logintable"
+      method="POST"><!--'get' will show the detail of input-->
+
+        <tr>
+                <td width="192"><div class="message">Welcome to Universe Login Page!</div></td>
+        </tr>
+        <tr>
+                <!--only support Exact lookup-->
+                <td>New friends: <input name="userID" type="text" id="userID" value="" placeholder=""></td>
+        </tr>
+        <tr>
+                <style type="value/css">
+                        input.text{text-align:center;padding:10px 20px;width:300px;}
+                </style>
+
+                <!--'once click <button>, must submit at once. So use <input>-->
+                <td> <input id='login1' value='Add' onclick="searchNewFriends()"> </input></td>
+        </tr>
+</form>
+</body>
+
+</html>

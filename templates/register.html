@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>Home</title>
+	<!-- Meta tag Keywords -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8" />
+	<meta name="keywords" content=""/>
+	<script>
+		addEventListener("load", function () {
+			setTimeout(hideURLbar, 0);
+		}, false);
+
+		function hideURLbar() {
+			window.scrollTo(0, 1);
+		}
+	</script>
+	<!-- Meta tag Keywords -->
+	<!-- css files -->
+	<link rel="stylesheet" href="static/css/style.css" type="text/css" media="all" />
+	<!-- Style-CSS -->
+	<link rel="stylesheet" href="static/css/fontawesome-all.css">
+	<!-- Font-Awesome-Icons-CSS -->
+	<!-- //css files -->
+	<!-- web-fonts -->
+	<!--<link href="http://maxcdn.bootstrapcdn.com/css?family=Josefin+Sans:100,100i,300,300i,400,400i,600,600i,700,700i" rel="stylesheet"/>-->
+	<!--<link href="http://maxcdn.bootstrapcdn.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet"/>-->
+	<!--&lt;!&ndash; //web-fonts &ndash;&gt;-->
+</head>
+
+<script src="{{url_for('static',filename='jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='jquery-1.8.3.min.js')}}"></script><!--for using '$'-->
+<script src="{{url_for('static',filename='jquery.base64.js')}}"></script>
+<script src="{{url_for('static',filename='md5.js')}}"></script>
+<script>
+    function register() {
+    	//judge only one userID
+    	var userID=document.getElementById('userID').value;
+		console.log(userID)
+
+		var jsonRaw = {
+			'RegisterUserID': userID
+		};
+
+		var jsonSendMessage = JSON.stringify(jsonRaw);
+		//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+		//no matter add the friend or not, flask must delete the record of Table newfriends
+		$.ajax({
+			url: "http://192.168.43.195:5000/judgeUserIDUniqueOrNot",
+			type: 'post',
+			contentType: "application/json",
+			dataType: "json",//necessary
+			data: jsonSendMessage,
+			success: function (data) {
+				var json = eval(data);
+
+				//unique
+				if(json['uniqueOrNot']==1){
+					//judge password + encryption
+					var password=document.getElementById('password').value;
+					console.log(password);
+
+					//judge password
+					len=password.length;
+
+					if(len<6){//password is too short
+						alert("Password is too short! No less than 6 characters.")
+						$.ajax({
+							url: "http://192.168.43.195:5000/registerRaw",
+							type: 'POST',
+							contentType: "application/json",
+						})
+					}
+
+					//base64
+					// //encryption
+					// var encryption=$.base64.encode(password);
+					//
+					// //Decrypt
+					// var decrypt=$.base64.decode(encryption)
+					//
+					// console.log("没有加密之前的是："+decrypt);
+					// console.log("加密以后是："+encryption);
+
+					// var password1 = $.base64.encode("123");
+					// console.log("加密以后是："+password1);
+
+					//after ID and password all right, store in DB
+					var jsonRaw = {
+						'registerId': document.getElementById("userID").value,
+						'password': password,
+					};
+					var jsonSendMessage = JSON.stringify(jsonRaw);
+					//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+					console.log(jsonSendMessage);
+
+					//register
+					$.ajax({
+						url: "http://192.168.43.195:5000/register",
+						type: 'post',
+						contentType: "application/json",
+						dataType: "json",//necessary
+						data: jsonSendMessage,
+						success: function (data) {
+							var json = eval(data);
+							console.log(json);
+
+							window.location.href="http://192.168.43.195:5000/";
+						}
+					})
+
+				}
+				//not unique
+				else{
+					alert('the userID has been used! Please input another.');
+
+					$.ajax({
+						url: "http://192.168.43.195:5000/registerRaw",
+						type: 'POST',
+						contentType: "application/json",
+					})
+				}
+			}
+		})
+    }
+</script>
+<body>
+	<!-- bg effect -->
+	<div id="bg">
+		<canvas></canvas>
+		<canvas></canvas>
+		<canvas></canvas>
+	</div>
+	<!-- //bg effect -->
+	<!-- title -->
+	<h1>Universe Register Form</h1>
+	<!-- //title -->
+	<!-- content -->
+	<div class="sub-main-w3">
+		<div id="formAction" width="202" border="0" onsubmit="return true" align="center" cellpadding="05" cellspacing="0"  method="POST"><!--'get' will show the detail of input-->
+			<h2>Login Now
+				<i class="fas fa-level-down-alt"></i>
+			</h2>
+			<div class="form-style-agile">
+				<label>
+					<i class="fas fa-user"></i>
+					userID
+				</label>
+				<input name="userID" type="text" id="userID" value="" placeholder=""/>
+            </div>
+			<div class="form-style-agile">
+				<label>
+					<i class="fas fa-unlock-alt"></i>
+					password
+				</label>
+				<input name="password" type="password" id="password" value="" placeholder=""/>
+			</div>
+			<div>
+				<ur>
+					<li>
+						<input id="showText" type="submit" value="Show" onclick="hideShowPsw()"/>
+						<span>^^^^^^^^^^^^</span>
+					<li>
+				</ur>
+			</div>
+			<!-- checkbox -->
+			<!-- //checkbox -->
+			<button value="register" id='register' value='login' onclick="register()">register</button>
+		</div>
+	</div>
+
+	//show password
+	<script type="text/javascript">
+	//获取input框内的切换图片id和input文本框的id
+	 var demoImg = document.getElementById("showText");
+	 var demoInput = document.getElementById("password");
+	 function hideShowPsw() {
+	  if (demoInput.type == "password") {
+	   demoInput.type = "text";
+	   demoImg.value="Hide"
+	  } else {
+	   demoInput.type = "password";
+	    demoImg.value="Show"
+	  }
+	 }
+</script>
+	<!-- Jquery -->
+	<script src="static/js/jquery-3.3.1.min.js"></script>
+	<!-- //Jquery -->
+
+	<!-- effect js -->
+	<script src="static/js/canva_moving_effect.js"></script>
+	<!-- //effect js -->
+
+</body>
+
+</html>

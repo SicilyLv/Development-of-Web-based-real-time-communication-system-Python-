@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>audio call</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+<div>
+<audio id="audio" width="200" height="200" autoplay="autoplay">
+    <source src="http://192.168.43.195:5000/static/musicmp3.mp3" type="audio/mpeg" />
+</audio>
+</div>
+
+<div>
+    <h1 id="h1"></h1>
+</div>
+
+<script type="text/javascript">
+
+    //????
+    function readBlobAsDataURL(blob, callback) {
+        var a = new FileReader();
+        a.onload = function(e) {callback(e.target.result);};
+        a.readAsDataURL(blob);
+    }
+
+    var wsServer = 'ws://192.168.43.195:8888/'; //服务器地址
+    var websocket = new WebSocket(wsServer,"chat"); //创建WebSocket对象
+
+    // 当Browser和WebSocketServer连接成功后，会触发onopen消息;
+    websocket.onopen = function (evt) {
+        //console.log('ok');
+        //console.log(websocket.readyState);//查看websocket当前状态
+        //1 ：对应常量OPEN (numeric value 1)，
+ // 连接成功建立，可以进行通信。The WebSocket connection is established and communication is possible.
+        if(websocket.readyState==1){
+            document.getElementById('h1').innerText='Be chatting online!';
+        }
+    };
+
+    // 如果连接失败，发送、接收数据失败或者处理数据出现错误，browser会触发onerror消息;
+    websocket.onerror = function(evt) { console.log(evt);console.log('no');};
+
+    websocket.onclose = function (evt) {
+        console.log("close");
+    //已经关闭连接
+    };
+
+    //no execute
+    function send(sendData1){
+        console.log('send data!!!!!!!!!!!!')
+        console.log(websocket.readyState);//查看websocket当前状态
+        websocket.send(sendData1);
+    }
+
+     // 接收到服务器消息后的回调函数
+   websocket.onmessage = function (evt)
+   {
+      var received_msg = evt.data;
+      //console.log("received_msg");
+      if (received_msg.indexOf("sorry") == -1) {
+        console.log("收到back send消息："+received_msg);
+      }
+   };
+
+    function wclose(){
+        websocket.send("0");
+        websocket.close();
+
+    }
+    window.onbeforeunload = function () {
+        websocket.send("0");
+        websocket.close();
+    }
+
+</script>
+    
+<script type="text/javascript">
+    var sendData=new Blob();
+
+    var audio=document.getElementById('audio');
+
+    navigator.getUserMedia  = navigator.getUserMedia ||
+              navigator.webkitGetUserMedia ||
+              navigator.mediaDevices.getUserMedia ||
+              navigator.msGetUserMedia;//获取媒体对象（这里指麦克风）
+
+    navigator.getUserMedia({"audio":true }, gotStream, noStream);
+    //参数1获取用户打开权限；参数2成功打开audio后调用，并传一个音频流对象，参数3打开失败后调用，传错误信息
+    
+    function gotStream(stream) {
+       // console.log(stream);//media stream
+
+       //var context = new AudioContext();
+
+       // 这里就要用到srcObject属性了，可以直接播放的流资源
+        audio.srcObject = stream;//media stream
+        //console.log(typeof(audio.srcObject));
+        //console.log(audio.srcObject);
+
+        //创建了MediaRecorder的实例mediaRecorder。
+        var mediaRecorder = new MediaRecorder(stream, {
+             audioBitsPerSecond : 128000, // 音频码率
+             //mimeType: 'audio/mpeg', // Chrome只支持webm，不支持其他audio的格式???
+        });
+
+        //控制mediaRecorder的开始采集和停止采集的方法了
+        function getMediaData(){
+            mediaRecorder.start();
+
+            setTimeout(function(){mediaRecorder.stop();},10000)//在函数体里面写入你想要等待执行的代码
+        }
+        setInterval(getMediaData(),5000);
+
+        // var blob = new Blob([mediaRecorder.data],{ 'type' : 'audio/mp3' });
+        //
+        // //blob对象本质上是js中的一个对象，里面可以储存大量的二进制编码格式的数据。
+        // let a = document.createElement('a')
+        // a.href = window.URL.createObjectURL(blob);
+        // a.download = `test.mp4`
+        // a.click()
+
+
+        sendData=mediaRecorder.data;
+        // console.log(sendData)
+        // console.log(typeof(sendData))
+        websocket.send(mediaRecorder.data);
+
+        audio.onerror = function () {
+          stream.stop();
+        };
+
+        stream.onended = noStream;
+
+        //当指定的音频/视频的元数据已加载时，会发生 loadedmetadata 事件。
+        audio.onloadedmetadata = function () {
+            // console.log('指定的音频元数据已被前端<audio>加载（与后端无关）')
+        };
+
+         // 播放
+    }
+    
+    function noStream(err) {
+        console.log("there is wrong when we get audio stream!");
+        console.lo(err);
+    }
+
+    function sendAudioStream() {
+        
+    }
+</script>
+
+</body>
+</html>

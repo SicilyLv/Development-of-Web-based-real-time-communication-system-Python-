@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>HTML5µÇÂ¼Ò³Ãæ - Õ¾³¤ËØ²Ä</title>
+<!-- demo scripts -->
+<link rel="stylesheet" href="static/css/style1.css">
+</head>
+
+<script type="text/javascript" src="static/jquery.min.js"></script>
+<script src="{{url_for('static',filename='jquery-1.8.3.min.js')}}"></script>
+<script>
+        function searchNewFriends(){
+                var jsonRaw = {
+				'newFriend': $("#userID").val(),//get <input> value
+                };
+                var jsonFriendID = JSON.stringify(jsonRaw)//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+
+                console.log(jsonFriendID);
+
+                $.ajax({
+                        url: "http://192.168.43.195:5000/addingFriendExistingOrNot",
+                        type: 'post',
+                        contentType: "application/json",
+                        dataType: "json",//necessary
+                        data: jsonFriendID,
+                        success: function (data) {
+                            console.log('2222');
+                            var json = eval(data);
+
+                            if (data['isExisting']==-1){
+                                    alert('There is no such friend, please input again!')
+                                    window.location.href="http://192.168.43.195:5000/addNewFriendRaw";
+                            }
+                            else if(data['isExisting']==0){
+                                    alert('You are friends already, please add another person!')
+                                    window.location.href="http://192.168.43.195:5000/addNewFriendRaw";
+                            }
+                            else{//added, and skip to chat.html
+                                    window.location.href="http://192.168.43.195:5000/chatRaw";
+                            }
+                        }
+                })
+        }
+</script>
+
+<body>
+<br><br><br><br><br><br><br>
+<!-- demo content -->
+<div class="loginform cf">
+	<form name="login" action="index_submit" method="get" accept-charset="utf-8">
+		<ul>
+			<li>
+			<input name="userID" type="text" id="userID" value="" placeholder="taget ID"/>
+			</li>
+			<li><input  id='login1' value='Add' onclick="searchNewFriends()" size="2" align="center" ></input></li>
+		</ul>
+	</form>
+</div>
+<div style="text-align:center;clear:both">
+<p>Add a new friend</p>
+</div>
+</body>
+
+</html>

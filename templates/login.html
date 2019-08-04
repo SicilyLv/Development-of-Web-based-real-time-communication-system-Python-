@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html lang="zxx">
+
+<head>
+	<title>Home</title>
+	<!-- Meta tag Keywords -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8" />
+	<meta name="keywords" content=""/>
+	<script>
+		addEventListener("load", function () {
+			setTimeout(hideURLbar, 0);
+		}, false);
+
+		function hideURLbar() {
+			window.scrollTo(0, 1);
+		}
+	</script>
+	<!-- Meta tag Keywords -->
+	<!-- css files -->
+	<link rel="stylesheet" href="static/css/style.css" type="text/css" media="all" />
+	<!-- Style-CSS -->
+	<link rel="stylesheet" href="static/css/fontawesome-all.css">
+	<!-- Font-Awesome-Icons-CSS -->
+	<!-- //css files -->
+	<!-- web-fonts -->
+	<!--<link href="http://maxcdn.bootstrapcdn.com/css?family=Josefin+Sans:100,100i,300,300i,400,400i,600,600i,700,700i" rel="stylesheet">-->
+	<!--<link href="http://maxcdn.bootstrapcdn.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet">-->
+	<!-- //web-fonts -->
+</head>
+
+<body>
+	<!-- bg effect -->
+	<div id="bg">
+		<canvas></canvas>
+		<canvas></canvas>
+		<canvas></canvas>
+	</div>
+	<!-- //bg effect -->
+	<!-- title -->
+	<h1>Universe Login Form</h1>
+
+	<!-- //title -->
+	<!-- content -->
+	<div class="sub-main-w3">
+		<div id="formAction" width="202" border="0" onsubmit="return false" align="center" cellpadding="05" cellspacing="0"  method="POST"><!--'get' will show the detail of input-->
+			<h2>Login Now
+				<i class="fas fa-level-down-alt"></i>
+			</h2>
+			<div class="form-style-agile">
+				<label>
+					<i class="fas fa-user"></i>
+					userID
+				</label>
+				<input name="userID" type="text" id="userID" value="" placeholder=""/>
+			</div>
+			<div class="form-style-agile">
+				<label>
+					<i class="fas fa-unlock-alt"></i>
+					password
+				</label>
+				<input name="password" type="password" id="password" value="" placeholder=""/>
+			</div>
+			<div>
+				<ur>
+					<li>
+						<button id="showText" type="button" value="Show" onclick="hideShowPsw()">showText</button>
+						<span>^^^^^^^^^^^^</span>
+					<li>
+				</ur>
+			</div>
+			<!-- //checkbox -->
+			<button value="Log In" id='login1' value='login' onclick="setCookie()">Log In </button>
+		</div>
+
+			<h2>No Account?</h2>
+			<br/>
+			<button style="height:40px;width:240px" style='background-color:#acff37' onclick="window.location.href='http://192.168.43.195:5000/registerRaw'">
+			Register Now!
+			</button>
+	</div>
+	<!-- //content -->
+
+	//show password
+<script>
+	//获取input框内的切换图片id和input文本框的id
+	 var demoImg = document.getElementById("showText");
+	 var demoInput = document.getElementById("password");
+	 function hideShowPsw() {
+		  if (demoInput.type == "password") {
+		   demoInput.type = "text";
+		   demoImg.innerText="Hide"
+		  } else {
+		   demoInput.type = "password";
+			demoImg.innerText="Show"
+		  }
+	 }
+</script>
+
+<script>
+        function setCookie(){
+                document.cookie="userID="+userID.value;
+
+                //<input> is submit type
+                var x=document.getElementById('formAction');
+
+				var jsonRaw = {
+					'registerId': document.getElementById("userID").value,
+					'password': document.getElementById("password").value,
+				};
+				var jsonSendMessage = JSON.stringify(jsonRaw);
+				//把原来是对象的类型转换成易传递的json编码的字符串类型：data is Json type
+				console.log(jsonSendMessage);
+				//judge online or not
+				$.ajax({
+					url: "http://192.168.43.195:5000/login",
+					type: 'post',
+					contentType: "application/json",
+					dataType: "json",//necessary
+					data: jsonSendMessage,
+					success: function (data) {
+						var json = eval(data);
+						console.log(json);
+
+						if(json['loginState']==1){
+							window.location.href="http://192.168.43.195:5000/chatRaw";
+						}
+						else{
+							alert('Password or userID is wrong. Please input again.');
+						}
+					}
+				})
+        }
+</script>
+	<!-- //copyright -->
+
+	<!-- Jquery -->
+	<script src="static/js/jquery-3.3.1.min.js"></script>
+	<!-- //Jquery -->
+
+	<!-- effect js -->
+	<script src="static/js/canva_moving_effect.js"></script>
+	<!-- //effect js -->
+
+</body>
+
+</html>

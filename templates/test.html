@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action='{{ url_for('form_data') }}' method="POST">
+    <input name="username" type="text"/>
+    <input type="submit">
+
+</form>
+<Br>
+<input type="button" name="sendjson" value="提交" id="sendjson">
+<div id="myDiv"></div>
+<script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+<script>
+    $("#sendjson").click(function () {
+        params = {"username": "lisi"}
+
+        {#$.getJSON("{{ url_for('form_data') }}",params, function (result) {#}
+        {#        $("#myDiv").append("hello world1");#}
+        {#        console.log(obj.username + "<br>");#}
+        {# });#}
+
+        {#$.ajax({#}
+        {#    "url": "{{ url_for('form_data') }}",#}
+        {#    "type": "POST",#}
+        {#    "data": params,#}
+        {#    "success": function (obj) {#}
+        {#        $("#myDiv").append("hello world")#}
+        {#        console.log(obj.username + "<br>")#}
+        {#    },#}
+        {#    "error": function (obj) {#}
+        {#        console.log(obj)#}
+        {#    },#}
+        {#    "dataType": "json",#}
+        {#    "async": true#}
+        {# });#}
+
+        {#$.get("{{ url_for('form_data') }}", params, function (obj) {#}
+        {#    $("#myDiv").append("hello world")#}
+        {#    console.log(obj.username + "<br>");#}
+        {# }, "json");#}
+
+        $.post("{{ url_for('form_data') }}", params, function (obj) {
+            $("#myDiv").append(obj.username + "<br>")
+            console.log(obj);
+        }, "json");
+    })
+    {#$('#sendjson').bind('click', submit_form);#}
+</script>
+</body>
+</html>
