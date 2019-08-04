@@ -1,6 +1,6 @@
 # Python3, Flask, jQuery
 
-This project is suitable for python web beginners reference. It implements many functions: login, register, search/add/delete friends, send txt/doc/excel/jpg...
+This project is suitable for python web beginners reference. It implements many functions in the LAN: login, register, search/add/delete friends, send txt/doc/excel/jpg...
 
 ### Installation
 
