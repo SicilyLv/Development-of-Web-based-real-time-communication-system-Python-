@@ -11,7 +11,7 @@ broswer
 
 ## Running the test
 
-Run the project in 2 devices or more meantime(It means that there are 2 users online)
+Run the project in 2 devices or more meantime(It means that there are at least 2 users online)
 
 ### Break down into end to end test
 
